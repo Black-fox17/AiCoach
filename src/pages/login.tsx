@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AuthLayout from '../components/AuthLayout';
 import Input from '../components/Input';
+import { Link } from 'react-router-dom';
 
 interface LoginForm {
   email: string;
@@ -120,7 +121,9 @@ const Login: React.FC = () => {
             onClick={() => {/* TODO: Add navigation to signup */}}
             className="font-medium text-blue-600 hover:text-blue-500"
           >
+            <Link to= '/signup'>
             Sign up
+            </Link>
           </button>
         </p>
       </form>

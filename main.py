@@ -20,6 +20,9 @@ class Signup(BaseModel):
     email:str
     password:str
 
+class Signin(BaseModel):
+    email:str
+    password:str
 
 
 @app.post("/api/signup")
@@ -41,8 +44,11 @@ async def create_signup(input_data:Signup):
         return {"result":"yes"}
 
 @app.post("/api/signin")
-async def create_signin(input_data:Signup):
+async def create_signin(input_data:Signin):
     email = input_data.email
     password = input_data.password
-    results = get_signin_info
-    return {"result": results}
+    results = get_signin_info()
+    for record in results:
+        if record[0] == email and record[1] == password:
+            return {"status": "success", "message": "Sign-in successful!"}
+    return {"status": "failure"}

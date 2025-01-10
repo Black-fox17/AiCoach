@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from auth import insert_data,get_all_data
+from auth import insert_data,get_all_data,get_signin_info
 import json
 
-origins = ['http://localhost:3000']
+origins = ['http://localhost:5173']
 
 app = FastAPI()
 app.add_middleware(
@@ -16,7 +16,7 @@ app.add_middleware(
 )
 
 class Signup(BaseModel):
-    full_name:str
+    name:str
     email:str
     password:str
 
@@ -25,25 +25,24 @@ class Signup(BaseModel):
 @app.post("/api/signup")
 async def create_signup(input_data:Signup):
     print(input_data)
-    full_name = input_data.full_name
+    full_name = input_data.name
     email = input_data.email
     password = input_data.password
     with open("output.json","w") as f:
         json.dump([{"email":email,"password":password}],f)
     all_data = get_all_data()
-    # print(email)
-    # print(all_data)
     if email not in all_data:
         try:
             insert_data(full_name,email,password)
-            print("Data added successfully")
         except Exception as e:
             print(f"Error occured adding data {e}")
         return {"result":"no"}
     else:
         return {"result":"yes"}
 
-# @app.post("/api/signin")
-# async def create_signin(input_data:Signup):
-#     email = input_data.email
-#     password = input_data.password
+@app.post("/api/signin")
+async def create_signin(input_data:Signup):
+    email = input_data.email
+    password = input_data.password
+    results = get_signin_info
+    return {"result": results}

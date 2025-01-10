@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dumbbell, Brain, Camera, LineChart, Shield, Users } from 'lucide-react';
-
+import { Link } from 'react-router-dom';
 interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
@@ -17,7 +17,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
   </div>
 );
 
-const Home: React.FC<{ onLogin: () => void; onSignup: () => void }> = ({ onLogin, onSignup }) => {
+const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Navigation */}
@@ -30,16 +30,20 @@ const Home: React.FC<{ onLogin: () => void; onSignup: () => void }> = ({ onLogin
             </div>
             <div className="flex items-center gap-4">
               <button
-                onClick={onLogin}
                 className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-colors"
               >
+                <Link
+                to = "/login">
                 Log in
+                </Link>
               </button>
               <button
-                onClick={onSignup}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
+                <Link
+                to = "/signup">
                 Sign up
+                </Link>
               </button>
             </div>
           </div>
@@ -60,13 +64,13 @@ const Home: React.FC<{ onLogin: () => void; onSignup: () => void }> = ({ onLogin
             </p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={onSignup}
                 className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
               >
+                <Link to='/signup'>
                 Get Started Free
+                </Link>
               </button>
               <button
-                onClick={onLogin}
                 className="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-medium hover:bg-gray-50 transition-colors"
               >
                 Learn More
@@ -121,10 +125,11 @@ const Home: React.FC<{ onLogin: () => void; onSignup: () => void }> = ({ onLogin
             Join thousands of users who have already improved their workout form with AI assistance.
           </p>
           <button
-            onClick={onSignup}
             className="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-medium hover:bg-gray-100 transition-colors"
           >
+            <Link to = '/login'>
             Start Your Free Trial
+            </Link>
           </button>
         </div>
       </div>

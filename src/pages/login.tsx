@@ -36,6 +36,7 @@ const Login: React.FC = () => {
 
     setIsLoading(true);
     try {
+      
       // TODO: Integrate with your FastAPI backend
       console.log('Login form submitted:', form);
     } catch (error) {

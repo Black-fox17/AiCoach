@@ -134,6 +134,7 @@ const Signup: React.FC = () => {
         <button
           type="submit"
           disabled={isLoading}
+          onClick={handleSubmit}
           className={`
             w-full flex justify-center py-3 px-4 border border-transparent rounded-lg
             text-sm font-medium text-white bg-blue-600 hover:bg-blue-700

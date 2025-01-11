@@ -45,21 +45,29 @@ const mockSessions: WorkoutSession[] = [
 function Main() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'workout' | 'analysis' | 'progress'>('dashboard');
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [sessions, setSessions] = useState([{}]);
+  const [Progress,setProgress] = useState({});
+
 
   const handleVideoRecorded = async (videoBlob: Blob) => {
     // TODO: Send to your FastAPI backend for analysis
     console.log('Video recorded, size:', videoBlob.size);
   };
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState({"workout_sessions":[{}],
+    "user_progress":{}
+  });
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('/api/user', {
+        const token = localStorage.getItem('email');
+        const response = await axios.get('http://localhost:8000/api/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUserData(response.data);
+        console.log("Response data:", response.data);
+        setUserData(response.data); 
+        setSessions(userData.workout_sessions);
+        setProgress(userData.user_progress);
       } catch (error) {
         console.error('Failed to fetch user data', error);
       }
@@ -120,7 +128,7 @@ function Main() {
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
             <h2 className="text-2xl font-bold">Welcome Back!</h2>
-            <Dashboard progress={mockProgress} />
+            <Dashboard progress={Progress} />
             <div>
               <h3 className="text-xl font-semibold mb-4">Recommended Workouts</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -171,7 +179,7 @@ function Main() {
             <h2 className="text-2xl font-bold">Your Progress</h2>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-semibold mb-4">Workout History</h3>
-              <ProgressChart data={mockSessions} />
+              <ProgressChart data={sessions} />
             </div>
           </div>
         )}

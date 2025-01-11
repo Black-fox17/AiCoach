@@ -10,7 +10,7 @@ interface PrivateRouteProps {
   }
   
   const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-    const isAuthenticated = Boolean(localStorage.getItem('token')); // Replace with actual auth logic
+    const isAuthenticated = Boolean(localStorage.getItem('email')); // Replace with actual auth logic
   
     return isAuthenticated ? children : <Navigate to="/login" />;
   };

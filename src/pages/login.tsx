@@ -41,11 +41,13 @@ const Login: React.FC = () => {
     try {
       const response = await axios.post('http://localhost:8000/api/signin', form);
       if (response.data.status === 'success'){
-        localStorage.setItem('token', response.data.message); // Save the token
-        navigate('/main'); // Redirect to the main page
+        localStorage.setItem('email', response.data.message); // Save the token
+        navigate('/main'); 
+        console.log("Done");
       }else{
         newErrors.password = "Invalid login details";
         setErrors(newErrors);
+        console.log("An error occured");
       }
       console.log('Login form submitted:', form);
     } catch (error) {
@@ -114,6 +116,7 @@ const Login: React.FC = () => {
         <button
           type="submit"
           disabled={isLoading}
+          onClick={handleSubmit}
           className={`
             w-full flex justify-center py-3 px-4 border border-transparent rounded-lg
             text-sm font-medium text-white bg-blue-600 hover:bg-blue-700

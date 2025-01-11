@@ -38,16 +38,13 @@ def get_workout_sessions(email):
             }
             for row in result
         ]
-
+        cursor.close()
+        connection.close()
         return workout_sessions
-
+    
     except Exception as e:
         print(f"An error occurred: {e}")
         return []
-    finally:
-        if connection:
-            cursor.close()
-            connection.close()
 
 
 def get_user_progress(email):
@@ -77,17 +74,17 @@ def get_user_progress(email):
             "averageAccuracy": result["average_accuracy"],  # Already rounded
             "streak": result["streak"]
         }
+
+        cursor.close()
+        connection.close()
         return user_progress
 
     except Exception as e:
         print(f"An error occurred: {e}")
         return {}
-    finally:
-        if connection:
-            cursor.close()
-            connection.close()
+
 
 # Example usage
-email = "ayeleru1234@gmail.com"
-workout_sessions = get_user_progress(email)
-print(workout_sessions)
+# email = "ayeleru1234@gmail.com"
+# workout_sessions = get_user_progress(email)
+# print(workout_sessions)

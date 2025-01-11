@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from auth import insert_data,get_all_data,get_signin_info
@@ -56,9 +56,18 @@ async def create_signin(input_data:Signin):
             return {"status": "success", "message": email}
     return {"status": "failure"}
 
-@app.post("/api/user")
-async def get_user_info(input_data:User):
-    email = input_data.email
+@app.get("/api/user")
+async def get_user_info(authorization: str = Header(...)):
+    # Extract the email from the Authorization header (assuming it's the token)
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=400, detail="Invalid token format")
+    
+    email = authorization.split(" ")[1]  # Extract the email
+    if not email:
+        raise HTTPException(status_code=400, detail="Email not provided")
+    
+    # Replace with actual data-fetching logic
     workout_sessions = get_workout_sessions(email)
     user_progress = get_user_progress(email)
-    return {"user_progress":user_progress,"workout_sessions":workout_sessions}
+
+    return {"user_progress": user_progress, "workout_sessions": workout_sessions}

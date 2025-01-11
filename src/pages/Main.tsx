@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Dumbbell, Activity, Video, BarChart3 } from 'lucide-react';
 import WorkoutCamera from '../components/WorkoutCamera';
 import ProgressChart from '../components/ProgressChart';
 import WorkoutCard from '../components/WorkoutCard';
 import Dashboard from '../components/Dashboard';
 import type { Exercise, WorkoutSession, UserProgress } from '../types';
+import axios from 'axios';
 
 // Mock data - replace with actual API calls
 const mockExercises: Exercise[] = [
@@ -49,6 +50,27 @@ function Main() {
     // TODO: Send to your FastAPI backend for analysis
     console.log('Video recorded, size:', videoBlob.size);
   };
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/user', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserData(response.data);
+      } catch (error) {
+        console.error('Failed to fetch user data', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">

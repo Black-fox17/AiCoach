@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import AuthLayout from '../components/AuthLayout';
 import Input from '../components/Input';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginForm {
   email: string;
@@ -15,9 +17,10 @@ const Login: React.FC = () => {
   });
   const [errors, setErrors] = useState<Partial<LoginForm>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const newErrors: Partial<LoginForm> = {};
+  const navigate = useNavigate();
 
   const validateForm = () => {
-    const newErrors: Partial<LoginForm> = {};
     if (!form.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
@@ -36,8 +39,14 @@ const Login: React.FC = () => {
 
     setIsLoading(true);
     try {
-      
-      // TODO: Integrate with your FastAPI backend
+      const response = await axios.post('http://localhost:8000/api/signin', form);
+      if (response.data.status === 'success'){
+        localStorage.setItem('token', response.data.message); // Save the token
+        navigate('/main'); // Redirect to the main page
+      }else{
+        newErrors.password = "Invalid login details";
+        setErrors(newErrors);
+      }
       console.log('Login form submitted:', form);
     } catch (error) {
       console.error('Login error:', error);

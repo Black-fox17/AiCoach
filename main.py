@@ -53,7 +53,7 @@ async def create_signin(input_data:Signin):
     results = get_signin_info()
     for record in results:
         if record[0] == email and record[1] == password:
-            return {"status": "success", "message": email}
+            return {"status": "success", "message": email,'name':record[2]}
     return {"status": "failure"}
 
 @app.get("/api/user")

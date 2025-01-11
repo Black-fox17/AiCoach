@@ -37,7 +37,7 @@ def get_all_data():
         return []
 
 def get_signin_info():
-    get_query = "SELECT email, password FROM ai_auth;"
+    get_query = "SELECT email, password, full_name FROM ai_auth;"
     try:
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
@@ -49,3 +49,4 @@ def get_signin_info():
         print(f"An error occurred: {e}")
         return []
 
+# print(get_signin_info())

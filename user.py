@@ -81,8 +81,4 @@ def get_user_progress(email):
 
 
 # Example usage
-email = "ayeleru1234@gmail.com"
-user_progress = get_user_progress(email)
-workout_sessions = get_workout_sessions(email)
-print(workout_sessions)
-print(user_progress)
+# email = "ayeleru1234@gmail.com"

@@ -69,5 +69,6 @@ async def get_user_info(authorization: str = Header(...)):
     # Replace with actual data-fetching logic
     workout_sessions = get_workout_sessions(email)
     user_progress = get_user_progress(email)
+    print(workout_sessions)
 
     return {"user_progress": user_progress, "workout_sessions": workout_sessions}

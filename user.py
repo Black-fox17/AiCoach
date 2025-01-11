@@ -38,8 +38,6 @@ def get_workout_sessions(email):
             }
             for row in result
         ]
-        cursor.close()
-        connection.close()
         return workout_sessions
     
     except Exception as e:
@@ -75,8 +73,6 @@ def get_user_progress(email):
             "streak": result["streak"]
         }
 
-        cursor.close()
-        connection.close()
         return user_progress
 
     except Exception as e:
@@ -85,6 +81,8 @@ def get_user_progress(email):
 
 
 # Example usage
-# email = "ayeleru1234@gmail.com"
-# workout_sessions = get_user_progress(email)
-# print(workout_sessions)
+email = "ayeleru1234@gmail.com"
+user_progress = get_user_progress(email)
+workout_sessions = get_workout_sessions(email)
+print(workout_sessions)
+print(user_progress)

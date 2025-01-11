@@ -42,6 +42,7 @@ const Login: React.FC = () => {
       const response = await axios.post('http://localhost:8000/api/signin', form);
       if (response.data.status === 'success'){
         localStorage.setItem('email', response.data.message); // Save the token
+        localStorage.setItem('name',response.data.name);
         navigate('/main'); 
         console.log("Done");
       }else{

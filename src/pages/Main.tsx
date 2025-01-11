@@ -1,11 +1,12 @@
 import React, { useState,useEffect } from 'react';
-import { Dumbbell, Activity, Video, BarChart3 } from 'lucide-react';
+import { Dumbbell, Activity, Video, BarChart3 , LogOut} from 'lucide-react';
 import WorkoutCamera from '../components/WorkoutCamera';
 import ProgressChart from '../components/ProgressChart';
 import WorkoutCard from '../components/WorkoutCard';
 import Dashboard from '../components/Dashboard';
 import type { Exercise, WorkoutSession, UserProgress } from '../types';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // Mock data - replace with actual API calls
 const mockExercises: Exercise[] = [
@@ -39,20 +40,31 @@ function Main() {
     averageAccuracy: 0,
     streak: 0
   });
+  const [fullname,Setfullname] = useState('');
+  const navigate = useNavigate();
 
+  const handleSignOut = () => {
+    // Clear local storage
+    localStorage.removeItem('email');
+    localStorage.removeItem('name');
+    // Navigate to home page
+    navigate('/');
+  };
 
   const handleVideoRecorded = async (videoBlob: Blob) => {
     // TODO: Send to your FastAPI backend for analysis
     console.log('Video recorded, size:', videoBlob.size);
   };
-  // const [userData, setUserData] = useState({"workout_sessions":[{}],
-  //   "user_progress":{}
-  // });
+
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('email');
+        const rawName = localStorage.getItem('name');
+        const name = rawName ? rawName.trim() : "";
+        console.log(name)
+        Setfullname(name);
         const response = await axios.get('http://localhost:8000/api/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -107,6 +119,13 @@ function Main() {
                 Progress
               </button>
             </div>
+            <button
+                onClick={handleSignOut}
+                className="flex items-center px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <LogOut className="mr-2" size={20} />
+                Sign Out
+              </button>
           </div>
         </div>
       </nav>
@@ -115,7 +134,7 @@ function Main() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
-            <h2 className="text-2xl font-bold">Welcome Back!</h2>
+            <h2 className="text-2xl font-bold">Welcome Back {fullname}!</h2>
             <Dashboard progress={Progress} />
             <div>
               <h3 className="text-xl font-semibold mb-4">Recommended Workouts</h3>

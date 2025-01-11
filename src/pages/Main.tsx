@@ -29,33 +29,25 @@ const mockExercises: Exercise[] = [
   }
 ];
 
-const mockProgress: UserProgress = {
-  workoutsCompleted: 24,
-  totalMinutes: 720,
-  averageAccuracy: 85,
-  streak: 5
-};
-
-const mockSessions: WorkoutSession[] = [
-  { id: '1', date: '2024-03-01', type: 'strength', duration: 30, calories: 150, accuracy: 82 },
-  { id: '2', date: '2024-03-02', type: 'cardio', duration: 45, calories: 300, accuracy: 88 },
-  { id: '3', date: '2024-03-03', type: 'strength', duration: 40, calories: 200, accuracy: 85 }
-];
-
 function Main() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'workout' | 'analysis' | 'progress'>('dashboard');
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
-  const [sessions, setSessions] = useState([{}]);
-  const [Progress,setProgress] = useState({});
+  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
+  const [Progress, setProgress] = useState<UserProgress>({
+    workoutsCompleted: 0,
+    totalMinutes: 0,
+    averageAccuracy: 0,
+    streak: 0
+  });
 
 
   const handleVideoRecorded = async (videoBlob: Blob) => {
     // TODO: Send to your FastAPI backend for analysis
     console.log('Video recorded, size:', videoBlob.size);
   };
-  const [userData, setUserData] = useState({"workout_sessions":[{}],
-    "user_progress":{}
-  });
+  // const [userData, setUserData] = useState({"workout_sessions":[{}],
+  //   "user_progress":{}
+  // });
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -65,9 +57,8 @@ function Main() {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("Response data:", response.data);
-        setUserData(response.data); 
-        setSessions(userData.workout_sessions);
-        setProgress(userData.user_progress);
+        setSessions(response.data.workout_sessions);
+        setProgress(response.data.user_progress);
       } catch (error) {
         console.error('Failed to fetch user data', error);
       }
@@ -76,9 +67,6 @@ function Main() {
     fetchUserData();
   }, []);
 
-  if (!userData) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="min-h-screen bg-gray-100">

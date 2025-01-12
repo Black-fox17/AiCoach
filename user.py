@@ -11,7 +11,6 @@ connection = psycopg2.connect(
 )
 def get_workout_sessions(email):
     try:
-        
         cursor = connection.cursor(cursor_factory=DictCursor)
 
         # SQL query to fetch workouts for the given email
@@ -26,11 +25,15 @@ def get_workout_sessions(email):
         cursor.execute(query, (email,))
         result = cursor.fetchall()
 
+        # If no result, return an empty list
+        if not result:
+            return []
+
         # Format the result as a list of dictionaries
         workout_sessions = [
             {
                 "id": str(row["id"]),
-                "date": row["date"].strftime("%Y-%m-%d"),  # Format date as a string
+                "date": row["date"].strftime("%Y-%m-%d"),
                 "type": row["type"],
                 "duration": row["duration"],
                 "calories": row["calories"],
@@ -39,7 +42,7 @@ def get_workout_sessions(email):
             for row in result
         ]
         return workout_sessions
-    
+
     except Exception as e:
         print(f"An error occurred: {e}")
         return []
@@ -49,27 +52,35 @@ def get_user_progress(email):
     try:
         cursor = connection.cursor(cursor_factory=DictCursor)
 
-        # SQL queries to calculate progress
+        # SQL query to check if the user has progress data
         query = """
         SELECT
             workouts_completed,
             total_minutes,
-            average_accuracy AS average_accuracy,  -- Convert to percentage
+            average_accuracy,
             streak
         FROM progress
         WHERE user_email = %s;
         """
 
-
         # Execute the query
         cursor.execute(query, (email,))
         result = cursor.fetchone()
 
-        
+        # If no result, return default progress
+        if not result:
+            return {
+                "workoutsCompleted": 0,
+                "totalMinutes": 0,
+                "averageAccuracy": 0.0,
+                "streak": 0
+            }
+
+        # Otherwise, return the fetched progress
         user_progress = {
             "workoutsCompleted": result["workouts_completed"],
             "totalMinutes": result["total_minutes"],
-            "averageAccuracy": result["average_accuracy"],  # Already rounded
+            "averageAccuracy": result["average_accuracy"],
             "streak": result["streak"]
         }
 
@@ -77,8 +88,9 @@ def get_user_progress(email):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        return {}
-
-
-# Example usage
-# email = "ayeleru1234@gmail.com"
+        return {
+            "workoutsCompleted": 0,
+            "totalMinutes": 0,
+            "averageAccuracy": 0.0,
+            "streak": 0
+        }

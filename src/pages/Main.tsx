@@ -52,7 +52,7 @@ function Main() {
     navigate('/');
   };
 
-  const handleVideoRecorded = async (videoBlob: Blob) => {
+  const handleVideoRecorded = async (videoBlob: Blob, duration: number) => {
     try {
       const formData = new FormData();
       formData.append('video', videoBlob, 'workout.webm');
@@ -64,9 +64,14 @@ function Main() {
         },
       });
       
-      console.log('Analysis response:', response.data);
-      // After successful analysis, update progress
-      handleUpdateProgress();
+      // Update progress with the actual duration
+      const progressData = {
+        duration: Math.floor(duration / 60), // Convert seconds to minutes
+        accuracy: response.data.accuracy || 85,
+        type: selectedExercise?.type || 'strength'
+      };
+
+      await updateProgress(progressData);
     } catch (error) {
       console.error('Failed to analyze workout video:', error);
     }
@@ -83,27 +88,32 @@ function Main() {
           Authorization: `Bearer ${localStorage.getItem('email')}`,
         },
       });
+
+      // Get video duration and update progress
+      const video = document.createElement('video');
+      video.preload = 'metadata';
       
-      console.log('Analysis response:', response.data);
-      // After successful analysis, update progress
-      handleUpdateProgress();
+      video.onloadedmetadata = async () => {
+        const duration = Math.floor(video.duration);
+        const progressData = {
+          duration: Math.floor(duration / 60), // Convert seconds to minutes
+          accuracy: response.data.accuracy || 85,
+          type: selectedExercise?.type || 'strength'
+        };
+
+        await updateProgress(progressData);
+      };
+      
+      video.src = URL.createObjectURL(file);
     } catch (error) {
       console.error('Failed to analyze uploaded video:', error);
     }
   };
 
-  const handleUpdateProgress = async () => {
-    setIsUpdating(true);
+  const updateProgress = async (progressData: { duration: number; accuracy: number; type: string }) => {
     try {
       const token = localStorage.getItem('email');
       
-      // Send current workout data to update progress
-      const progressData = {
-        duration: 30, // Example duration in minutes
-        accuracy: 85, // Example accuracy percentage
-        type: selectedExercise?.type || 'strength'
-      };
-
       // Update progress in the backend
       await axios.post('http://localhost:8000/api/update-progress', progressData, {
         headers: { Authorization: `Bearer ${token}` },
@@ -119,8 +129,6 @@ function Main() {
       setProgress(response.data.user_progress);
     } catch (error) {
       console.error('Failed to update progress:', error);
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -228,18 +236,6 @@ function Main() {
               <h2 className="text-2xl font-bold">
                 {selectedExercise ? `Workout: ${selectedExercise.name}` : 'Start a Workout'}
               </h2>
-              <button
-                onClick={handleUpdateProgress}
-                disabled={isUpdating}
-                className={`flex items-center px-4 py-2 rounded-lg text-white ${
-                  isUpdating 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-purple-600 hover:bg-purple-700'
-                }`}
-              >
-                <RefreshCw className={`mr-2 ${isUpdating ? 'animate-spin' : ''}`} size={20} />
-                {isUpdating ? 'Updating...' : 'Update Progress'}
-              </button>
             </div>
             <WorkoutCamera 
               onVideoRecorded={handleVideoRecorded}

@@ -1,9 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { Play, Pause, Square, Upload } from 'lucide-react';
 
 interface WorkoutCameraProps {
-  onVideoRecorded: (videoBlob: Blob) => void;
+  onVideoRecorded: (videoBlob: Blob, duration: number) => void;
   onVideoUploaded: (file: File) => void;
 }
 
@@ -18,9 +18,33 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
   const [aiFeedback, setAiFeedback] = useState<string>('');
   const [isLive, setIsLive] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [timer, setTimer] = useState(0);
+  const [showCongrats, setShowCongrats] = useState(false);
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isRecording]);
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleStartRecording = () => {
     setRecordedChunks([]);
+    setTimer(0);
     if (webcamRef.current) {
       const stream = webcamRef.current.video?.srcObject as MediaStream;
       if (stream) {
@@ -42,20 +66,32 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       const blob = new Blob(recordedChunks, { type: 'video/webm' });
-      onVideoRecorded(blob);
+      onVideoRecorded(blob, timer);
       setAiFeedback('AI Coach: Great form! Keep your core tight and maintain steady breathing.');
+      setShowCongrats(true);
+      setTimeout(() => setShowCongrats(false), 5000); // Hide after 5 seconds
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setIsLive(false);
-      onVideoUploaded(file);
-      setAiFeedback('AI Coach: Analyzing uploaded workout video...');
-      setTimeout(() => {
-        setAiFeedback('AI Coach: Good form overall. Focus on keeping your back straight during squats.');
-      }, 2000);
+      // Get video duration
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        const duration = Math.floor(video.duration);
+        setTimer(duration);
+        onVideoUploaded(file);
+        setAiFeedback('AI Coach: Analyzing uploaded workout video...');
+        setShowCongrats(true);
+        setTimeout(() => {
+          setAiFeedback('AI Coach: Good form overall. Focus on keeping your back straight during squats.');
+          setTimeout(() => setShowCongrats(false), 5000);
+        }, 2000);
+      };
+      video.src = URL.createObjectURL(file);
     }
   };
 
@@ -66,6 +102,11 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
   return (
     <div className="space-y-6">
       <div className="relative w-full max-w-2xl mx-auto">
+        {/* Timer Display */}
+        <div className="absolute top-4 right-4 bg-black/50 px-4 py-2 rounded-full text-white font-mono text-xl">
+          {formatTime(timer)}
+        </div>
+
         {isLive ? (
           <Webcam
             ref={webcamRef}
@@ -126,6 +167,20 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
       {aiFeedback && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
           <p className="text-blue-800 font-medium">{aiFeedback}</p>
+        </div>
+      )}
+
+      {/* Congratulations Popup */}
+      {showCongrats && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+          <div className="bg-white rounded-lg p-8 shadow-xl transform animate-bounce">
+            <h3 className="text-2xl font-bold text-green-600 mb-4">🎉 Congratulations!</h3>
+            <p className="text-gray-700 text-lg">
+              You've completed {formatTime(timer)} of workout!
+              <br />
+              Keep up the great work! 💪
+            </p>
+          </div>
         </div>
       )}
     </div>

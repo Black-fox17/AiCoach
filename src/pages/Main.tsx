@@ -41,7 +41,6 @@ function Main() {
     streak: 0
   });
   const [fullname,Setfullname] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = () => {

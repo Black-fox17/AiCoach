@@ -1,17 +1,15 @@
 import React, { useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Play, Pause, Square, Upload, RefreshCw } from 'lucide-react';
+import { Play, Pause, Square, Upload } from 'lucide-react';
 
 interface WorkoutCameraProps {
   onVideoRecorded: (videoBlob: Blob) => void;
   onVideoUploaded: (file: File) => void;
-  onUpdateProgress: () => void;
 }
 
 const WorkoutCamera: React.FC<WorkoutCameraProps> = ({ 
   onVideoRecorded, 
-  onVideoUploaded,
-  onUpdateProgress 
+  onVideoUploaded
 }) => {
   const webcamRef = useRef<Webcam>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -45,7 +43,6 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
       setIsRecording(false);
       const blob = new Blob(recordedChunks, { type: 'video/webm' });
       onVideoRecorded(blob);
-      // Simulated AI feedback - replace with actual API call
       setAiFeedback('AI Coach: Great form! Keep your core tight and maintain steady breathing.');
     }
   };
@@ -55,7 +52,6 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
     if (file) {
       setIsLive(false);
       onVideoUploaded(file);
-      // Simulated AI feedback - replace with actual API call
       setAiFeedback('AI Coach: Analyzing uploaded workout video...');
       setTimeout(() => {
         setAiFeedback('AI Coach: Good form overall. Focus on keeping your back straight during squats.');
@@ -98,13 +94,6 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
                 title="Upload Video"
               >
                 <Upload size={24} />
-              </button>
-              <button
-                onClick={onUpdateProgress}
-                className="bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-full"
-                title="Update Progress"
-              >
-                <RefreshCw size={24} />
               </button>
             </>
           ) : (

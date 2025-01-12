@@ -1,5 +1,5 @@
 import  { useState,useEffect } from 'react';
-import { Dumbbell, Activity, Video, BarChart3 , LogOut} from 'lucide-react';
+import { Dumbbell, Activity, Video, BarChart3, LogOut, RefreshCw } from 'lucide-react';
 import WorkoutCamera from '../components/WorkoutCamera';
 import ProgressChart from '../components/ProgressChart';
 import WorkoutCard from '../components/WorkoutCard';
@@ -41,6 +41,7 @@ function Main() {
     streak: 0
   });
   const [fullname,Setfullname] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = () => {
@@ -52,8 +53,23 @@ function Main() {
   };
 
   const handleVideoRecorded = async (videoBlob: Blob) => {
-    // TODO: Send to your FastAPI backend for analysis
-    console.log('Video recorded, size:', videoBlob.size);
+    try {
+      const formData = new FormData();
+      formData.append('video', videoBlob, 'workout.webm');
+      
+      const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('email')}`,
+        },
+      });
+      
+      console.log('Analysis response:', response.data);
+      // After successful analysis, update progress
+      handleUpdateProgress();
+    } catch (error) {
+      console.error('Failed to analyze workout video:', error);
+    }
   };
 
   const handleVideoUploaded = async (file: File) => {
@@ -61,21 +77,53 @@ function Main() {
       const formData = new FormData();
       formData.append('video', file);
       
-      // const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //     Authorization: `Bearer ${localStorage.getItem('email')}`,
-      //   },
-      // });
+      const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('email')}`,
+        },
+      });
       
-      console.log('Analysis response:');
-      // Handle the AI analysis response here
+      console.log('Analysis response:', response.data);
+      // After successful analysis, update progress
+      handleUpdateProgress();
     } catch (error) {
       console.error('Failed to analyze uploaded video:', error);
     }
   };
 
-  
+  const handleUpdateProgress = async () => {
+    setIsUpdating(true);
+    try {
+      const token = localStorage.getItem('email');
+      
+      // Send current workout data to update progress
+      const progressData = {
+        duration: 30, // Example duration in minutes
+        accuracy: 85, // Example accuracy percentage
+        type: selectedExercise?.type || 'strength'
+      };
+
+      // Update progress in the backend
+      await axios.post('http://localhost:8000/api/update-progress', progressData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Fetch updated data
+      const response = await axios.get('http://localhost:8000/api/user', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Update state with new data
+      setSessions(response.data.workout_sessions);
+      setProgress(response.data.user_progress);
+    } catch (error) {
+      console.error('Failed to update progress:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -97,15 +145,6 @@ function Main() {
 
     fetchUserData();
   }, []);
-
-
-  const handleUpdateProgress = async () => {
-    try {
-      console.log("Okay");
-    } catch (error) {
-      console.error('Failed to update progress:', error);
-    }
-  };
 
 
 
@@ -189,10 +228,23 @@ function Main() {
               <h2 className="text-2xl font-bold">
                 {selectedExercise ? `Workout: ${selectedExercise.name}` : 'Start a Workout'}
               </h2>
+              <button
+                onClick={handleUpdateProgress}
+                disabled={isUpdating}
+                className={`flex items-center px-4 py-2 rounded-lg text-white ${
+                  isUpdating 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-purple-600 hover:bg-purple-700'
+                }`}
+              >
+                <RefreshCw className={`mr-2 ${isUpdating ? 'animate-spin' : ''}`} size={20} />
+                {isUpdating ? 'Updating...' : 'Update Progress'}
+              </button>
             </div>
-            <WorkoutCamera onVideoRecorded={handleVideoRecorded} 
-            onVideoUploaded={handleVideoUploaded}
-            onUpdateProgress={handleUpdateProgress}/>
+            <WorkoutCamera 
+              onVideoRecorded={handleVideoRecorded}
+              onVideoUploaded={handleVideoUploaded}
+            />
             {selectedExercise && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold mb-4">Exercise Details</h3>

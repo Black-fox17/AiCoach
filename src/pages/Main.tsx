@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import  { useState,useEffect } from 'react';
 import { Dumbbell, Activity, Video, BarChart3 , LogOut} from 'lucide-react';
 import WorkoutCamera from '../components/WorkoutCamera';
 import ProgressChart from '../components/ProgressChart';
@@ -56,7 +56,26 @@ function Main() {
     console.log('Video recorded, size:', videoBlob.size);
   };
 
+  const handleVideoUploaded = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('video', file);
+      
+      // const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //     Authorization: `Bearer ${localStorage.getItem('email')}`,
+      //   },
+      // });
+      
+      console.log('Analysis response:');
+      // Handle the AI analysis response here
+    } catch (error) {
+      console.error('Failed to analyze uploaded video:', error);
+    }
+  };
 
+  
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -78,6 +97,16 @@ function Main() {
 
     fetchUserData();
   }, []);
+
+
+  const handleUpdateProgress = async () => {
+    try {
+      console.log("Okay");
+    } catch (error) {
+      console.error('Failed to update progress:', error);
+    }
+  };
+
 
 
   return (
@@ -161,7 +190,9 @@ function Main() {
                 {selectedExercise ? `Workout: ${selectedExercise.name}` : 'Start a Workout'}
               </h2>
             </div>
-            <WorkoutCamera onVideoRecorded={handleVideoRecorded} />
+            <WorkoutCamera onVideoRecorded={handleVideoRecorded} 
+            onVideoUploaded={handleVideoUploaded}
+            onUpdateProgress={handleUpdateProgress}/>
             {selectedExercise && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold mb-4">Exercise Details</h3>

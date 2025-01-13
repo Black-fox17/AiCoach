@@ -120,13 +120,9 @@ function Main() {
         streak: prevState.streak + progressData.streak,
       }))
       const token = localStorage.getItem('email');
-      
+      console.log(Progress);
       // Update progress in the backend
       const response = await axios.post('http://localhost:8000/api/update_progress', {"progress":Progress,"email":token})
-      console.log(response);
-      // // Update state with new data
-      // setSessions(response.data.workout_sessions);
-      // setAccuracy(response.data.user_progress.averageAccuracy)
     } catch (error) {
       console.error('Failed to update progress:', error);
     }
@@ -138,7 +134,6 @@ function Main() {
         const token = localStorage.getItem('email');
         const rawName = localStorage.getItem('name');
         const name = rawName ? rawName.trim() : "";
-        console.log(name)
         Setfullname(name);
         const response = await axios.get('http://localhost:8000/api/user', {
           headers: { Authorization: `Bearer ${token}` },

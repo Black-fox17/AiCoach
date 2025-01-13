@@ -105,6 +105,7 @@ def add_user_progress(email, workouts, minutes, accuracy, streak):
         user_exists = cursor.fetchone()
 
         if user_exists:
+            print(workouts, minutes, accuracy, streak)
             # Update the existing user's progress
             update_query = """
             UPDATE progress

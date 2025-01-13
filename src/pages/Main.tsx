@@ -1,5 +1,5 @@
 import  { useState,useEffect } from 'react';
-import { Dumbbell, Activity, Video, BarChart3, LogOut, RefreshCw } from 'lucide-react';
+import { Dumbbell, Activity, Video, BarChart3, LogOut } from 'lucide-react'; //RefreshCw
 import WorkoutCamera from '../components/WorkoutCamera';
 import ProgressChart from '../components/ProgressChart';
 import WorkoutCard from '../components/WorkoutCard';
@@ -42,7 +42,6 @@ function Main() {
   });
   const [fullname,Setfullname] = useState('');
   const navigate = useNavigate();
-  const [accuracy,setAccuracy] = useState(0);
 
   const handleSignOut = () => {
     // Clear local storage
@@ -59,15 +58,15 @@ function Main() {
       const progressData = {
         workouts: 1,
         duration: Math.floor(duration / 60), // Convert seconds to minutes
-        accuracy: ((85 + accuracy) / 100).toFixed(2),
+        accuracy: 85,
         streak: 1
       };
-      const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem('email')}`,
-        },
-      });
+      // const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //     Authorization: `Bearer ${localStorage.getItem('email')}`,
+      //   },
+      // });
       console.log(progressData);
       // await updateProgress(progressData);
     } catch (error) {
@@ -114,17 +113,15 @@ function Main() {
       setProgress(prevState => ({
         ...prevState,
         workoutsCompleted: prevState.workoutsCompleted + progressData.workouts,
-        averageAccuracy: prevState.averageAccuracy + progressData.accuracy,
+        averageAccuracy: parseFloat(((prevState.averageAccuracy + progressData.accuracy) / 100).toFixed(2)),
         totalMinutes: prevState.totalMinutes + progressData.duration,
         streak: prevState.streak + progressData.streak,
       }))
       const token = localStorage.getItem('email');
       
       // Update progress in the backend
-      await axios.post('http://localhost:8000/api/update-progress', progressData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const response = await axios.post('http://localhost:8000/api/update_progress', {"progress":Progress,"email":token})
+      console.log(response);
       // // Update state with new data
       // setSessions(response.data.workout_sessions);
       // setAccuracy(response.data.user_progress.averageAccuracy)

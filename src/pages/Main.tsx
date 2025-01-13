@@ -55,7 +55,7 @@ function Main() {
     try {
       const formData = new FormData();
       formData.append('video', videoBlob, 'workout.webm');
-      
+      console.log(Blob);
       const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -69,7 +69,7 @@ function Main() {
         accuracy: response.data.accuracy || 85,
         type: selectedExercise?.type || 'strength'
       };
-
+      console.log(progressData);
       await updateProgress(progressData);
     } catch (error) {
       console.error('Failed to analyze workout video:', error);
@@ -142,7 +142,6 @@ function Main() {
         const response = await axios.get('http://localhost:8000/api/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Response data:", response.data);
         setSessions(response.data.workout_sessions);
         setProgress(response.data.user_progress);
       } catch (error) {

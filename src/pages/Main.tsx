@@ -42,6 +42,7 @@ function Main() {
   });
   const [fullname,Setfullname] = useState('');
   const navigate = useNavigate();
+  const [accuracy,setAccuracy] = useState(0);
 
   const handleSignOut = () => {
     // Clear local storage
@@ -55,22 +56,20 @@ function Main() {
     try {
       const formData = new FormData();
       formData.append('video', videoBlob, 'workout.webm');
-      console.log(Blob);
+      const progressData = {
+        workouts: 1,
+        duration: Math.floor(duration / 60), // Convert seconds to minutes
+        accuracy: ((85 + accuracy) / 100).toFixed(2),
+        streak: 1
+      };
       const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('email')}`,
         },
       });
-      
-      // Update progress with the actual duration
-      const progressData = {
-        duration: Math.floor(duration / 60), // Convert seconds to minutes
-        accuracy: response.data.accuracy || 85,
-        type: selectedExercise?.type || 'strength'
-      };
       console.log(progressData);
-      await updateProgress(progressData);
+      // await updateProgress(progressData);
     } catch (error) {
       console.error('Failed to analyze workout video:', error);
     }
@@ -109,8 +108,16 @@ function Main() {
     }
   };
 
-  const updateProgress = async (progressData: { duration: number; accuracy: number; type: string }) => {
+  const updateProgress = async (progressData: {workouts:number, duration: number; accuracy: number; streak:number }) => {
     try {
+
+      setProgress(prevState => ({
+        ...prevState,
+        workoutsCompleted: prevState.workoutsCompleted + progressData.workouts,
+        averageAccuracy: prevState.averageAccuracy + progressData.accuracy,
+        totalMinutes: prevState.totalMinutes + progressData.duration,
+        streak: prevState.streak + progressData.streak,
+      }))
       const token = localStorage.getItem('email');
       
       // Update progress in the backend
@@ -118,14 +125,9 @@ function Main() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Fetch updated data
-      const response = await axios.get('http://localhost:8000/api/user', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // Update state with new data
-      setSessions(response.data.workout_sessions);
-      setProgress(response.data.user_progress);
+      // // Update state with new data
+      // setSessions(response.data.workout_sessions);
+      // setAccuracy(response.data.user_progress.averageAccuracy)
     } catch (error) {
       console.error('Failed to update progress:', error);
     }

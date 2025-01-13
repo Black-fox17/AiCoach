@@ -55,12 +55,14 @@ function Main() {
     try {
       const formData = new FormData();
       formData.append('video', videoBlob, 'workout.webm');
+      console.log(duration);
       const progressData = {
         workouts: 1,
         duration: Math.floor(duration / 60), // Convert seconds to minutes
         accuracy: 85,
         streak: 1
       };
+      updateProgress(progressData);
       // const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
       //   headers: {
       //     'Content-Type': 'multipart/form-data',

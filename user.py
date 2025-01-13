@@ -94,3 +94,46 @@ def get_user_progress(email):
             "averageAccuracy": 0.0,
             "streak": 0
         }
+
+def add_user_progress(email, workouts, minutes, accuracy, streak):
+    try:
+        cursor = connection.cursor()
+
+        # SQL query to check if the user already has progress data
+        check_query = "SELECT 1 FROM progress WHERE user_email = %s;"
+        cursor.execute(check_query, (email,))
+        user_exists = cursor.fetchone()
+
+        if user_exists:
+            # Update the existing user's progress
+            update_query = """
+            UPDATE progress
+            SET
+                workouts_completed = %s,
+                total_minutes = %s,
+                average_accuracy = %s,
+                streak = %s
+            WHERE user_email = %s;
+            """
+            cursor.execute(update_query, (workouts, minutes, accuracy, streak, email))
+        else:
+            # Insert a new user's progress
+            insert_query = """
+            INSERT INTO progress (
+                user_email,
+                workouts_completed,
+                total_minutes,
+                average_accuracy,
+                streak
+            ) VALUES (%s, %s, %s, %s, %s);
+            """
+            cursor.execute(insert_query, (email, workouts, minutes, accuracy, streak))
+
+        # Commit the transaction
+        connection.commit()
+
+        return {"success": True, "message": "User progress updated successfully."}
+
+    except Exception as e:
+        print(f"An error occurred while adding/updating user progress: {e}")
+        return {"success": False, "message": "Failed to update user progress."}

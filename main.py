@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from auth import insert_data,get_all_data,get_signin_info
-from user import get_user_progress,get_workout_sessions
+from user import get_user_progress,get_workout_sessions,add_user_progress
 import json
 
 origins = ['http://localhost:5173']
@@ -26,6 +26,10 @@ class Signin(BaseModel):
     password:str
 
 class User(BaseModel):
+    email:str
+
+class Progress(BaseModel):
+    progress: dict
     email:str
 
 @app.post("/api/signup")
@@ -72,3 +76,11 @@ async def get_user_info(authorization: str = Header(...)):
     print(workout_sessions)
 
     return {"user_progress": user_progress, "workout_sessions": workout_sessions}
+
+
+@app.post('/api/update_progress')
+async def update_progress(input_data:Progress):
+    email = input_data.email
+    progress = input_data.progress
+    output = add_user_progress(email,progress["workoutsCompleted"],progress["totalMinutes"],progress["averageAccuracy"],progress["streak"])
+    return {"result":output}

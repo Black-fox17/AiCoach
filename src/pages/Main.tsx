@@ -100,7 +100,7 @@ function Main() {
           type: selectedExercise?.type || 'strength'
         };
 
-        await updateProgress(progressData);
+        // await updateProgress(progressData);
       };
       
       video.src = URL.createObjectURL(file);

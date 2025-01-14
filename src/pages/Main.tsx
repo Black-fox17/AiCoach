@@ -8,7 +8,6 @@ import type { Exercise, WorkoutSession, UserProgress } from '../types';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-// Mock data - replace with actual API calls
 const mockExercises: Exercise[] = [
   {
     id: '1',
@@ -53,30 +52,22 @@ function Main() {
 
   const handleVideoRecorded = async (videoBlob: Blob, duration: number) => {
     try {
-      const formData = new FormData();
-      formData.append('video', videoBlob, 'workout.webm');
-      console.log(duration);
-      // const progressData = {
-      //   workouts: 1,
-      //   duration: Math.floor(duration / 60), // Convert seconds to minutes
-      //   accuracy: 85,
-      //   streak: 1
-      // };
-      setProgress(prevState => ({
-        ...prevState,
-        workoutsCompleted: prevState.workoutsCompleted + 1,
-        averageAccuracy: parseFloat(((prevState.averageAccuracy + 85) / 100).toFixed(2)),
-        totalMinutes: prevState.totalMinutes + duration,
-        streak: prevState.streak + 1,
-      }))
-      updateProgress();
-      // const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //     Authorization: `Bearer ${localStorage.getItem('email')}`,
-      //   },
-      // });
-      // await updateProgress(progressData);
+      const updatedProgress = {
+        ...Progress,
+        workoutsCompleted: Progress.workoutsCompleted + 1,
+        averageAccuracy: parseFloat(((Progress.averageAccuracy + 85) / 100).toFixed(2)),
+        totalMinutes: Progress.totalMinutes + duration,
+        streak: Progress.streak + 1,
+      };
+  
+      setProgress(updatedProgress);
+  
+      
+      const token = localStorage.getItem('email');
+      await axios.post('http://localhost:8000/api/update_progress', {
+        progress: updatedProgress,
+        email: token,
+      });
     } catch (error) {
       console.error('Failed to analyze workout video:', error);
     }
@@ -115,24 +106,6 @@ function Main() {
     }
   };
 
-  const updateProgress = async () => {
-    try {
-
-      // setProgress(prevState => ({
-      //   ...prevState,
-      //   workoutsCompleted: prevState.workoutsCompleted + 1,
-      //   averageAccuracy: parseFloat(((prevState.averageAccuracy + progressData.accuracy) / 100).toFixed(2)),
-      //   totalMinutes: prevState.totalMinutes + progressData.duration,
-      //   streak: prevState.streak + 1,
-      // }))
-      const token = localStorage.getItem('email');
-      console.log(Progress);
-      // Update progress in the backend
-      const response = await axios.post('http://localhost:8000/api/update_progress', {"progress":Progress,"email":token})
-    } catch (error) {
-      console.error('Failed to update progress:', error);
-    }
-  };
 
   useEffect(() => {
     const fetchUserData = async () => {

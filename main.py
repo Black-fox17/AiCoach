@@ -81,6 +81,7 @@ async def get_user_info(authorization: str = Header(...)):
 async def update_progress(input_data:Progress):
     email = input_data.email
     progress = input_data.progress
-    print(progress)
+    print(email,progress)
+
     output = add_user_progress(email,progress["workoutsCompleted"],progress["totalMinutes"],progress["averageAccuracy"],progress["streak"])
     return {"result":output}

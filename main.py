@@ -84,4 +84,4 @@ async def update_progress(input_data:Progress):
     print(email,progress)
 
     output = add_user_progress(email,progress["workoutsCompleted"],progress["totalMinutes"],progress["averageAccuracy"],progress["streak"])
-    return {"result":output}
+    print(output)

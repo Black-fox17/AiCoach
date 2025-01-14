@@ -56,20 +56,26 @@ function Main() {
       const formData = new FormData();
       formData.append('video', videoBlob, 'workout.webm');
       console.log(duration);
-      const progressData = {
-        workouts: 1,
-        duration: Math.floor(duration / 60), // Convert seconds to minutes
-        accuracy: 85,
-        streak: 1
-      };
-      updateProgress(progressData);
+      // const progressData = {
+      //   workouts: 1,
+      //   duration: Math.floor(duration / 60), // Convert seconds to minutes
+      //   accuracy: 85,
+      //   streak: 1
+      // };
+      setProgress(prevState => ({
+        ...prevState,
+        workoutsCompleted: prevState.workoutsCompleted + 1,
+        averageAccuracy: parseFloat(((prevState.averageAccuracy + 85) / 100).toFixed(2)),
+        totalMinutes: prevState.totalMinutes + duration,
+        streak: prevState.streak + 1,
+      }))
+      updateProgress();
       // const response = await axios.post('http://localhost:8000/api/analyze-workout', formData, {
       //   headers: {
       //     'Content-Type': 'multipart/form-data',
       //     Authorization: `Bearer ${localStorage.getItem('email')}`,
       //   },
       // });
-      console.log(progressData);
       // await updateProgress(progressData);
     } catch (error) {
       console.error('Failed to analyze workout video:', error);
@@ -109,16 +115,16 @@ function Main() {
     }
   };
 
-  const updateProgress = async (progressData: {workouts:number, duration: number; accuracy: number; streak:number }) => {
+  const updateProgress = async () => {
     try {
 
-      setProgress(prevState => ({
-        ...prevState,
-        workoutsCompleted: prevState.workoutsCompleted + progressData.workouts,
-        averageAccuracy: parseFloat(((prevState.averageAccuracy + progressData.accuracy) / 100).toFixed(2)),
-        totalMinutes: prevState.totalMinutes + progressData.duration,
-        streak: prevState.streak + progressData.streak,
-      }))
+      // setProgress(prevState => ({
+      //   ...prevState,
+      //   workoutsCompleted: prevState.workoutsCompleted + 1,
+      //   averageAccuracy: parseFloat(((prevState.averageAccuracy + progressData.accuracy) / 100).toFixed(2)),
+      //   totalMinutes: prevState.totalMinutes + progressData.duration,
+      //   streak: prevState.streak + 1,
+      // }))
       const token = localStorage.getItem('email');
       console.log(Progress);
       // Update progress in the backend

@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from auth import insert_data,get_all_data,get_signin_info
 from user import get_user_progress,get_workout_sessions,add_user_progress
 import json
+from typing import List
+import cv2
+import json
 
 origins = ['http://localhost:5173']
 
@@ -32,9 +35,11 @@ class Progress(BaseModel):
     progress: dict
     email:str
 
+class FrameData(BaseModel):
+    frames: List[str]
+
 @app.post("/api/signup")
 async def create_signup(input_data:Signup):
-    print(input_data)
     full_name = input_data.name
     email = input_data.email
     password = input_data.password
@@ -84,4 +89,10 @@ async def update_progress(input_data:Progress):
     print(email,progress)
 
     output = add_user_progress(email,progress["workoutsCompleted"],progress["totalMinutes"],progress["averageAccuracy"],progress["streak"])
-    print(output)
+
+@app.post("/upload-frames")
+async def upload_frames(data: FrameData):
+    # Process frames (e.g., save to disk, analyze, etc.)
+    with open("output.json", "w") as f:
+        json.dump({"frames": data.frames}, f)
+    return {"message": "Frames received", "num_frames": len(data.frames)}

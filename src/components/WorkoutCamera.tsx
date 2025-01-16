@@ -56,7 +56,6 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
       if (stream) {
         mediaRecorderRef.current = new MediaRecorder(stream);
         mediaRecorderRef.current.ondataavailable = (event) => {
-          console.log("Data available:", event.data, event.data.type);
           if (event.data.size > 0) {
             setRecordedChunks((prev) => [...prev, event.data]);
           }
@@ -114,7 +113,6 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
 
         // Convert frame to image data and send to backend
         const frameData = canvasElement.toDataURL("image/jpeg");
-        console.log(frameData);
         // sendFrameToBackend(frameData);
       }
     });
@@ -130,12 +128,10 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
   
   // Handle recordedChunks updates
   useEffect(() => {
-    console.log(recordedChunks.length);
     if (recordedChunks.length > 0) {
       const mimeType =
         recordedChunks[0].type || "video/webm" || "video/x-matroska;codecs=avc1";
       const blob = new Blob(recordedChunks, { type: mimeType });
-      console.log("Final Blob:", blob);
   
       // Call the callback with the video Blob
       onVideoRecorded(blob, timer);

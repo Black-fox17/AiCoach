@@ -5,7 +5,7 @@ import { Pose } from "@mediapipe/pose";
 import * as mpPose from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 import * as cam from "@mediapipe/camera_utils";
-// import axios from "axios";
+import axios from "axios";
 
 interface WorkoutCameraProps {
   onVideoRecorded: (videoBlob: Blob, duration: number) => void;
@@ -26,7 +26,7 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [timer, setTimer] = useState(0);
   const [showCongrats, setShowCongrats] = useState(false);
-
+  const [frameList, setFrameList] = useState<string[]>([]); 
   // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -83,9 +83,9 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
 
     const camera = new cam.Camera(webcamRef.current.video, {
       onFrame: async () => {
-        await pose.send({ image: webcamRef.current.video });
+         await pose.send({ image: webcamRef.current.video });
       },
-      width: 640,
+      width: 640,  
       height: 480,
     });
     camera.start();
@@ -113,16 +113,23 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
 
         // Convert frame to image data and send to backend
         const frameData = canvasElement.toDataURL("image/jpeg");
+        setFrameList((prevList) => [...prevList, frameData]);
         // sendFrameToBackend(frameData);
       }
     });
   };
 
-  const handleStopRecording = () => {
+  const handleStopRecording = async () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setAiFeedback("Processing your recorded video...");
+    }
+    try {
+      const response = await axios.post("http://localhost:8000/upload-frames", { frames: frameList });
+      console.log("Frames uploaded successfully:", response.data);
+    } catch (error) {
+      console.error("Error uploading frames:", error);
     }
   };
   

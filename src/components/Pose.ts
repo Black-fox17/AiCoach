@@ -26,7 +26,7 @@ import {
   let webcamRunning: Boolean = false;
   const videoHeight = "360px";
   const videoWidth = "480px";
-  
+    
   // Before we can use PoseLandmarker class we must wait for it to finish
   // loading. Machine Learning models can be large and take a moment to
   // get everything needed to run.

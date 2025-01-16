@@ -1,6 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { Play, Pause, Square, Upload } from 'lucide-react';
+import { Pose } from "@mediapipe/pose";
+import * as mpPose from "@mediapipe/pose";
+import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
+import * as cam from "@mediapipe/camera_utils";
+// import axios from "axios";
 
 interface WorkoutCameraProps {
   onVideoRecorded: (videoBlob: Blob, duration: number) => void;
@@ -18,6 +23,7 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
   const [aiFeedback, setAiFeedback] = useState<string>('');
   const [isLive, setIsLive] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [timer, setTimer] = useState(0);
   const [showCongrats, setShowCongrats] = useState(false);
 
@@ -58,8 +64,60 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
         mediaRecorderRef.current.start();
         setIsRecording(true);
         setAiFeedback('AI Coach: Analyzing your live workout...');
+        analyzePose();
       }
     }
+  };
+
+  const analyzePose = () => {
+    const pose = new Pose({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+    });
+
+    pose.setOptions({
+      modelComplexity: 1,
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5,
+    });
+
+    const camera = new cam.Camera(webcamRef.current.video, {
+      onFrame: async () => {
+        await pose.send({ image: webcamRef.current.video });
+      },
+      width: 640,
+      height: 480,
+    });
+    camera.start();
+
+    pose.onResults((results) => {
+      if (canvasRef.current) {
+        const canvasElement = canvasRef.current;
+        const canvasCtx = canvasElement.getContext("2d");
+
+        if (canvasCtx) {
+          canvasCtx.save();
+          canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+          canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+          drawConnectors(canvasCtx, results.poseLandmarks, mpPose.POSE_CONNECTIONS, {
+            color: "#00FF00",
+            lineWidth: 4,
+          });
+          drawLandmarks(canvasCtx, results.poseLandmarks, {
+            color: "#FF0000",
+            lineWidth: 2,
+          });
+          canvasCtx.restore();
+        }
+
+        // Convert frame to image data and send to backend
+        const frameData = canvasElement.toDataURL("image/jpeg");
+        console.log(frameData);
+        // sendFrameToBackend(frameData);
+      }
+    });
   };
 
   const handleStopRecording = () => {
@@ -128,11 +186,19 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
         </div>
 
         {isLive ? (
+        <div className="relative">
           <Webcam
             ref={webcamRef}
             audio={false}
             className="w-full rounded-lg shadow-lg"
           />
+          <canvas
+            ref={canvasRef}
+            className="absolute top-0 left-0 w-full h-full pointer-events-none"
+            width="640"
+            height="480"
+          ></canvas>
+        </div>
         ) : (
           <div className="w-full h-[400px] bg-gray-100 rounded-lg shadow-lg flex items-center justify-center">
             <p className="text-gray-500">Uploaded video will be processed here</p>

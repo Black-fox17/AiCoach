@@ -50,6 +50,7 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
       if (stream) {
         mediaRecorderRef.current = new MediaRecorder(stream);
         mediaRecorderRef.current.ondataavailable = (event) => {
+          console.log("Data available:", event.data, event.data.type);
           if (event.data.size > 0) {
             setRecordedChunks((prev) => [...prev, event.data]);
           }
@@ -61,17 +62,36 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
     }
   };
 
-  const handleStopRecording = async () => {
+  const handleStopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      const blob = new Blob(recordedChunks, { type: 'video/webm' });
-      onVideoRecorded(blob, timer);
-      setAiFeedback('AI Coach: Great form! Keep your core tight and maintain steady breathing.');
-      setShowCongrats(true);
-      setTimeout(() => setShowCongrats(false), 5000); // Hide after 5 seconds
+      setAiFeedback("Processing your recorded video...");
     }
   };
+  
+  // Handle recordedChunks updates
+  useEffect(() => {
+    console.log(recordedChunks.length);
+    if (recordedChunks.length > 0) {
+      const mimeType =
+        recordedChunks[0].type || "video/webm" || "video/x-matroska;codecs=avc1";
+      const blob = new Blob(recordedChunks, { type: mimeType });
+      console.log("Final Blob:", blob);
+  
+      // Call the callback with the video Blob
+      onVideoRecorded(blob, timer);
+      setAiFeedback(
+        "AI Coach: Great form! Keep your core tight and maintain steady breathing."
+      );
+  
+      // Show congratulatory message
+      setShowCongrats(true);
+      setTimeout(() => setShowCongrats(false), 5000);
+    }
+  }, [recordedChunks]); // Trigger when recordedChunks updates
+
+  
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

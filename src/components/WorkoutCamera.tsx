@@ -127,7 +127,7 @@ const WorkoutCamera: React.FC<WorkoutCameraProps> = ({
     }
     try {
       const response = await axios.post("http://localhost:8000/upload-frames", { frames: frameList });
-      console.log("Frames uploaded successfully:", response.data);
+      console.log("Frames uplo  aded successfully:", response.data);
     } catch (error) {
       console.error("Error uploading frames:", error);
     }
